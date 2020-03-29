@@ -17,6 +17,7 @@ class PlayState extends FlxState
 	public var player_height = 15;
 	public var player_width = 100;
 	public var player_ground_distance = 35;
+	public var player_angle_change_ceil = 30;
 
 	public var ball:FlxSprite;
 	public var ball_size = 10;
@@ -225,8 +226,17 @@ class PlayState extends FlxState
 			by < player.y &&
 			by + ball.height > player.y) {
 				// hit player
-				ball_down = Math.abs(ball_down) *-1;
+				var bd = Math.abs(ball_down) *-1;
+				var br = ball_right;
 				by = player.y + (ball.y - player.y);
+
+				var angle = PointToAngle(new Vector2(br, -bd));
+				var diff = (((bx + ball.width / 2 - player.x) / player_width) - 0.5) * 2;
+				angle -= diff * player_angle_change_ceil;
+				v = AngleToPoint(angle);
+
+				ball_down = -v.y;
+				ball_right = v.x;
 			}
 
 		ball.x = bx;
@@ -235,5 +245,15 @@ class PlayState extends FlxState
 		if (ball.y > FlxG.width) {
 			trace("game over");
 		}
+	}
+
+	private function PointToAngle(v: Vector2):Float {
+		var radian = Math.atan2(v.y, v.x);
+		return radian * 180 / Math.PI;
+	}
+
+	private function AngleToPoint(angle:Float):Vector2 {
+		var radian = Math.PI / 180 * angle;
+		return new Vector2(Math.cos(radian), Math.sin(radian));
 	}
 }
