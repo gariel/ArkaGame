@@ -1,5 +1,6 @@
 package;
 
+import lime.math.Vector2;
 import flixel.FlxG;
 import flixel.util.FlxColor;
 import flixel.FlxSprite;
@@ -11,7 +12,7 @@ class PlayState extends FlxState
 	private var right_panel_width = 250;
 
 	private var player:FlxSprite;
-	public var player_speed = 200;
+	public var player_speed = 300;
 	public var player_color = FlxColor.CYAN;
 	public var player_height = 15;
 	public var player_width = 100;
@@ -22,9 +23,9 @@ class PlayState extends FlxState
 	public var ball_initial_high = 50;
 	public var ball_color = FlxColor.GRAY;
 
-	public var ball_speed = 50;
-	public var ball_up = true;
-	public var ball_right = true;
+	public var ball_speed = 200;
+	public var ball_down = 1.0;
+	public var ball_right = 1.0;
 
 	public var wall_width = 10;
 	public var wall_color = FlxColor.WHITE;
@@ -113,8 +114,8 @@ class PlayState extends FlxState
 		ball.makeGraphic(ball_size, ball_size, ball_color);
 		add(ball);
 
-		ball_up = true;
-		ball_right = true;
+		ball_down = Math.abs(ball_down) * -1;
+		ball_right = Math.abs(ball_right);
 	}
 
 	override public function update(elapsed:Float)
@@ -141,21 +142,24 @@ class PlayState extends FlxState
 		var bx = ball.x;
 		var by = ball.y;
 
-		bx += (ball_speed * elapsed) * (ball_right ? 1 : -1);
-		by += (ball_speed * elapsed) * (ball_up ? -1 : 1);
+		var v = new Vector2(ball_right, ball_down);
+		v.normalize(1);
+
+		bx += (ball_speed * elapsed) * v.x;
+		by += (ball_speed * elapsed) * v.y;
 
 		if (bx < limit_left) {
-			ball_right = true;
+			ball_right = Math.abs(ball_right);
 			bx = limit_left + (limit_left - bx);
 		}
 
 		if (bx + ball_size > limit_right) {
-			ball_right = false;
+			ball_right = Math.abs(ball_right)*-1;
 			bx = limit_right - (limit_right - bx);
 		}
 
 		if (by < limit_top) {
-			ball_up = false;
+			ball_down = Math.abs(ball_down);
 			by = limit_top + (limit_top - by);
 		}
 
@@ -172,7 +176,7 @@ class PlayState extends FlxState
 				block_r > ball.x &&
 				block.x < ball_r) {
 				// hit from bottom
-				ball_up = false;
+				ball_down = Math.abs(ball_down);
 				by = block_b + (block_b - by);
 			} else if (
 				block.x < ball_r &&
@@ -180,7 +184,7 @@ class PlayState extends FlxState
 				block.y < ball_b &&
 				block_b > ball.y) {
 				// hit from left
-				ball_right = false;
+				ball_right = Math.abs(ball_right)  *-1;
 				bx = block.x + (bx - block.x);
 			} else if (
 				block_r > ball.x &&
@@ -188,7 +192,7 @@ class PlayState extends FlxState
 				block.y < ball_b &&
 				block_b > ball.y) {
 				// hit from right
-				ball_right = true;
+				ball_right = Math.abs(ball_right);
 				bx = block_r + (block_r - ball.x);
 			} else if (
 				block.y < ball_b &&
@@ -196,7 +200,7 @@ class PlayState extends FlxState
 				block_r > ball.x &&
 				block.x < ball_r) {
 				// hit from top
-				ball_up = true;
+				ball_down = Math.abs(ball_down) *-1;
 				by = block.y + (by - block.y);
 			} else if (
 				block.x < ball.x &&
@@ -221,7 +225,7 @@ class PlayState extends FlxState
 			by < player.y &&
 			by + ball.height > player.y) {
 				// hit player
-				ball_up = true;
+				ball_down = Math.abs(ball_down) *-1;
 				by = player.y + (ball.y - player.y);
 			}
 
